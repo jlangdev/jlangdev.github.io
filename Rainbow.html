@@ -1,0 +1,235 @@
+
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Motion</title>
+	
+	<script>
+
+			//---------------CANVAS SET UP-----------------//
+			window.onload =function background() {         //
+			var canvas = document.createElement("canvas"), //
+			c = canvas.getContext("2d")                    //
+														   //
+			                                               //
+                                                           //
+			//canvas sizing                                //
+			canvas.width = window.innerWidth;              //
+			canvas.height = window.innerHeight;            //
+			document.body.appendChild(canvas);  
+
+			document.body.style.cursor = 'none';
+
+           	
+			//---------------------------------------------//
+
+			//particle array for big numbers and automation
+			particles = {};
+			particleIndex = 0,
+			particleNum = 1;
+
+
+
+	
+	//initial background
+	c.fillStyle = "black";
+	c.fillRect(0,0,canvas.width,canvas.height);
+
+	//initializing variables for user controll
+	var locVarX = -5;
+	var locVarY = 0;
+	var alphaCtrl = 0.1;
+	var frame = 0;
+	var rads = 0;
+	var spinX = 0;
+	var spinY = 0;
+	var pulseVar = 0;
+	var pulseVarCt = 0;
+	
+	//functions for user controlls
+	document.onkeydown = function(e) {
+    switch (e.keyCode) {
+    	case 32:
+    		//SPACE
+    		//resets everything
+    		locVarX = 0;
+    		locVarY= 0;
+    		alphaCtrl = .3;
+			break;
+
+     
+        case 65:
+            //LEFT 'a'
+            //shrinks tadpole
+        	locVarX -= 1;
+           	break;
+
+        case 87:
+        	//UP 'w'
+        	//makes velocity tend upwards
+        	locVarY += 1;
+            break;
+
+        case 68:
+            //RIGHT 'd'
+            //shrinks tadpole
+        	locVarX +=2;
+            break;
+
+        case 83:
+        	//DOWN 's'
+        	//spin
+        	spinX = 5 * Math.cos(rads/4);
+        	spinY = 5 * Math.sin(rads/4);
+        	rads++;
+            break;
+
+        case 81:
+        	//Q
+        	//pulse
+        	pulseVar= 5 * Math.cos(pulseVarCt/5);
+        	pulseVarCt++;
+        	break;
+
+        case 69:
+        	//e
+        	//placeholder for more functions
+        	break;
+    	}
+	}
+	//end user controlls
+
+	//initiate mouse and add event listener
+		var mouse = {
+			x: undefined,
+			y: undefined
+			}
+
+			window.addEventListener('mousemove',
+				function(event){
+					mouse.x = event.x;
+					mouse.y = event.y;
+				});
+	//end mouse and event initializer/listner
+
+	
+	//Begin particle object
+	function Particle(){
+		//deal with particle ID
+		particleIndex++;
+		particles[particleIndex] = this;
+		this.id = particleIndex;
+
+		//give particle slight movement when user isn't doing anything
+		this.x = mouse.x - 2.5*Math.cos(this.id/90);
+		this.y = mouse.y - 2.5*Math.sin(this.id/90);
+
+		//initiate velocity
+		this.vx = 1;
+		this.vy = 1;
+
+		//initiate radius, growth rate, alpha, and thickness
+		this.radius = 0.05;
+		this.radiusGrowth = 1;
+		this.alpha = 1;
+		this.color = 0;
+		this.thick = 0.5;
+
+		//Deal with life span
+		this.life = 0;
+		this.maxLife = 100;
+		this.color = 255;
+		this.counter = 0;
+		this.counterTruth = 1;
+
+	}
+
+			Particle.prototype.draw = function(){
+
+				//calculate and update velocity to tend towards center
+				this.magnitude = -1 * Math.sqrt(Math.abs(Math.pow(mouse.x-canvas.width/2,2)+Math.pow(mouse.y-canvas.height/2,2)));
+				this.vx = ((-1 * (Math.cos(this.id/180) - 3))  * (mouse.x-canvas.width/2)/(this.magnitude/2))/2;
+				this.vy =((1 * Math.sin(this.id/180) + 2) * (mouse.y-canvas.height/2)/(this.magnitude/2))/2;
+				
+				//update position
+				this.x += this.vx + spinX + Math.cos(this.id/45);
+				this.y += this.vy + spinY +Math.sin(this.id/45);
+				this.vx *= 1.001;
+				this.vy *= 1.001;
+				
+				//update life
+				this.life++
+					if (this.life >= this.maxLife){
+					delete particles[this.id]
+				}
+				
+
+				//Use radius function to get that nice bulbous tear drop shape
+				//uses user controlled variables to alter function appearence
+				this.radius = -(Math.pow(this.life,2)/(15+locVarX)) + (8*this.life);
+				if (this.radius <= 0){
+					this.radius = 0.1;
+				}
+
+				//make color dynamic (we'll work on this part)
+				this.color = 180 * Math.cos(this.life/(6*Math.PI)+spinX/(Math.PI)) + 180;
+	
+				//begin drawing circles
+				//top left (when mouse is top right)
+					c.beginPath();
+					c.arc(canvas.width - Math.abs(this.x - canvas.width),canvas.height - Math.abs(this.y - canvas.height),this.radius,0,Math.PI * 2,false);
+					c.strokeStyle = "hsla(" + this.color + ",100%,50%," +this.alpha+")";
+					c.lineWidth = this.thick;
+					c.stroke();
+
+				//Bottom left (when mouse is top right)
+					c.beginPath();
+					c.arc(Math.abs(this.x - canvas.width),Math.abs(this.y - canvas.height),this.radius,0,Math.PI * 2,false);
+					c.strokeStyle = "hsla(" + this.color + ",100%,50%," +this.alpha+")";
+					c.lineWidth = this.thick;
+					c.stroke();
+
+				//Top Left (when mouse is top right)
+					c.beginPath();
+					c.arc(Math.abs(this.x - canvas.width),/*Math.abs(this.y-canvas.height/2)*/ canvas.height - Math.abs(this.y - canvas.height),this.radius,0,Math.PI * 2,false);
+					c.strokeStyle = "hsla(" + this.color + ",100%,50%," +this.alpha+")";
+					c.lineWidth = this.thick;
+					c.stroke();
+
+				//Bottom Right (when mouse is top right)
+					c.beginPath();
+					c.arc(canvas.width - Math.abs(this.x - canvas.width),Math.abs(this.y-canvas.height),this.radius,0,Math.PI * 2,false);
+					c.strokeStyle = "hsla(" + this.color + ",100%,50%," +this.alpha+")";
+					c.lineWidth = this.thick;
+					c.stroke();
+
+				//end drawing circles
+				
+				//update thickness and opacity
+				this.thick *= 1;
+				this.alpha -= .005
+			}
+
+
+				
+			//Animation looping function
+			setInterval(function(){
+				c.fillStyle = "rgba(0,0,0,1)";
+				c.fillRect(0,0,canvas.width,canvas.height);
+				frame++;
+				new Particle()
+				for (var i in particles){
+					particles[i].draw();
+				}	
+			}, 5);
+			//end animation looping function
+			
+		};
+	</script>
+</head>
+<body style = "overflow:hidden; position:absolute; padding: 0; margin: 0; ">
+
+
+
+</body>
+</html>

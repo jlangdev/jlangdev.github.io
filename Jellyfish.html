@@ -1,0 +1,377 @@
+
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Motion</title>
+	
+	<script>
+
+			//---------------CANVAS SET UP-----------------//
+			window.onload =function background() {         //
+			var canvas = document.createElement("canvas"), //
+			c = canvas.getContext("2d")                    //
+														   //
+			                                               //
+                                                           //
+			//canvas sizing                                //
+			canvas.width = window.innerWidth;              //
+			canvas.height = window.innerHeight;            //
+			document.body.appendChild(canvas);  
+
+			    document.body.style.cursor = 'none';
+
+           //
+			//---------------------------------------------//
+
+			//particle array for big numbers and automation
+			particles = {};
+			particleIndex = 0,
+			particleNum = 1;
+
+			tentacles = {};
+			tentacleIndex = 0,
+			tentacleNum = 1;
+
+
+
+	
+	//initial background
+	c.fillStyle = "black";
+	c.fillRect(0,0,canvas.width,canvas.height);
+
+	//optional color array
+	//var colorArray = [
+	//'#DCD6F7',
+	//'#A6B1E1',
+	//'#42033D'];
+var flap = 0;
+var squirt = 1;
+var locVarX = 0;
+var locVarY = 0;
+var alphaCtrl = 0.1;
+var frame = 0;
+var rads = 0;
+var spinX = 0;
+var spinY = 0;
+	document.onkeydown = function(e) {
+    switch (e.keyCode) {
+    	case 32:
+    	//SPACE
+    	locVarX = 0;
+    	locVarY= 0;
+    	alphaCtrl = .3;
+				break;
+
+        case 65:
+            //LEFT
+           
+            break; 
+        case 87:
+        	//UP
+        	flap = 5 * Math.cos(rads/4);
+        	squirt = Math.cos(rads/4)+1.3;
+        	 spinX = 5 * Math.cos(rads/4);
+         spinY = 5 * Math.sin(rads/4);
+   
+        	rads++
+        
+            break;
+        case 68:
+            //RIGHT
+            break;
+        case 83:
+        	//DOWN
+         spinX = 5 * Math.cos(rads/4);
+         spinY = 5 * Math.sin(rads/4);
+         rads++;
+        
+            break;
+        case 81:
+        //q
+        	break;
+        case 69:
+        //e
+        	
+        	break;
+    }
+}
+
+		//initiate mouse and add event listener
+			var mouse = {
+				x: undefined,
+				y: undefined
+
+			}
+
+			window.addEventListener('mousemove',
+				function(event){
+					mouse.x = event.x;
+					mouse.y = event.y;
+					//console.log(mouse);
+
+				});
+			//---------------------
+
+
+
+	function Particle(){
+		particleIndex++;
+		particles[particleIndex] = this;
+		this.id = particleIndex;
+		//give particle slight movement
+		this.x = mouse.x - 2.5*Math.cos(this.id/30);//canvas.width /2 //- 50 * (Math.cos(this.id/4));
+		this.y = mouse.y - 2.5*Math.sin(this.id/30);//canvas.height /2 //- 50 * (Math.sin(this.id/4))-200;
+		//initiate velocity
+		this.vx = 1;
+		this.vy = 1;
+		//initiate radius, growth rate, alpha, and thickness
+		this.radius = 0.05;
+		this.radiusGrowth = 1;
+		this.alpha = 1;
+		//this.color = "rgba(255,255,255,"+this.alpha+")";
+		this.thick = 2;
+		//life span
+		this.life = 0;
+		this.maxLife = 30;
+		this.color = 255;
+
+	}
+
+
+			Particle.prototype.draw = function(){
+
+				//calculate and update velocity to tend towards center
+				this.magnitude = Math.sqrt(Math.abs(Math.pow(mouse.x-canvas.width/2,2)+Math.pow(mouse.y-canvas.height/2,2)));
+				this.vx = (-1 * (2 * Math.cos(this.id/80) - 3))  * (mouse.x-canvas.width/2)/this.magnitude;
+				this.vy = (1 * Math.sin(this.id/80) + 2) * (mouse.y-canvas.height/2)/this.magnitude;
+				this.x += this.vx;
+				this.y += this.vy;
+				this.vy *= 1.03;
+				this.vx *= 1.03;
+				this.life++
+					if (this.life >= this.maxLife){
+					delete particles[this.id]
+				}
+				//this.radiusGrowth *= 1.2 + ((this.magnitude)/10000); //+ radiusGrowthModifier;
+
+				//this.radius += this.radiusGrowth;
+
+				//TRIPPY BALL MACHINE ALIEN
+				//this.radius = (((50*Math.cos((this.life+1)/2)+1) * Math.cos((this.life+1)/2)+1))*this.radiusGrowth;
+				//this.radiusGrowth *= 0.99 ;// +(this.life))
+
+				//tear drop
+				this.radius =(24+flap)*Math.sqrt(this.life);
+				if (this.radius <= 0){
+					this.radius = 0.1;
+				}
+
+				this.color = 50 * Math.sin(this.life/(6*Math.PI)+spinX/(Math.PI)) + 270;
+
+				//this.radiusGrowth += ((this.magnitude+100)/10000)*(10*Math.cos(this.life - this.id/20) + 31);
+				//this.color =  Math.floor(50 * Math.cos(this.id/20)+200); // this.magnitude * 2/3; 
+
+
+				//change width of specific circle
+				//if (this.life == 3){
+				//	this.radius = specialVar;
+				//}
+
+				
+		
+					//top right (when mouse is top right)
+				c.beginPath();
+				c.arc(canvas.width - Math.abs(this.x - canvas.width),canvas.height - Math.abs(this.y - canvas.height),this.radius,0,Math.PI * 2,false);
+				c.strokeStyle = "hsla(" + this.color + ",100%,50%," +this.alpha+")";
+				c.lineWidth = this.thick;
+				c.stroke();
+
+					c.beginPath();
+				c.arc(Math.abs(this.x - canvas.width),Math.abs(this.y - canvas.height),this.radius,0,Math.PI * 2,false);
+				c.strokeStyle = "hsla(" + this.color + ",100%,50%," +this.alpha+")";
+				c.lineWidth = this.thick;
+				c.stroke();
+
+					//Top Left (when mouse is top right)
+				c.beginPath();
+				c.arc(Math.abs(this.x - canvas.width),/*Math.abs(this.y-canvas.height/2)*/ canvas.height - Math.abs(this.y - canvas.height),this.radius,0,Math.PI * 2,false);
+				c.strokeStyle = "hsla(" + this.color + ",100%,50%," +this.alpha+")";
+				c.lineWidth = this.thick;
+				c.stroke();
+
+					//Bottom Right (when mouse is top right)
+				c.beginPath();
+				c.arc(canvas.width - Math.abs(this.x - canvas.width),Math.abs(this.y-canvas.height),this.radius,0,Math.PI * 2,false);
+				c.strokeStyle = "hsla(" + this.color + ",100%,50%," +this.alpha+")";
+				c.lineWidth = this.thick;
+				c.stroke();
+			
+			
+
+			
+
+
+				//if (this.thick > 0.31)
+				this.thick *= 0.99;
+				this.alpha -= .05  ; //* Math.cos(this.id/5) + .03;
+
+				
+					
+				
+					
+			
+			}
+
+			//tenatacle
+			function Tentacle(offSetX, offSetY){
+		tentacleIndex++;
+		tentacles[tentacleIndex] = this;
+		this.id = tentacleIndex;
+		//give particle slight movement
+		this.x = mouse.x - 2.5*Math.cos(this.id/240);//canvas.width /2 //- 50 * (Math.cos(this.id/4));
+		this.y = mouse.y - 2.5*Math.sin(this.id/240);//canvas.height /2 //- 50 * (Math.sin(this.id/4))-200;
+		//initiate velocity
+		this.vx = 1;
+		this.vy = 1;
+		//initiate radius, growth rate, alpha, and thickness
+		this.radius = 0.05;
+		this.radiusGrowth = 1;
+		this.alpha = 1;
+		this.color = 0;
+		this.thick = 0.5;
+		//life span
+		this.life = 0;
+		this.maxLife = 100;
+		this.color = 255;
+		this.counter = 0;
+		this.counterTruth = 1;
+		this.offSetX = offSetX;
+		this.offSetY = offSetY;
+
+	}
+
+
+			Tentacle.prototype.draw = function(){
+
+				//calculate and update velocity to tend towards center
+				
+				this.magnitude = Math.sqrt(Math.abs(Math.pow(mouse.x-canvas.width/2,2)+Math.pow(mouse.y-canvas.height/2,2)));
+				this.vx = squirt * this.offSetX + (-1 * (2 * Math.cos(this.id/640) - 3))  * (mouse.x-canvas.width/2)/this.magnitude;
+				this.vy = squirt * this.offSetY + (1 * Math.sin(this.id/640) + 2) * (mouse.y-canvas.height/2)/this.magnitude;
+				
+				this.x += this.vx;
+				this.y += this.vy;
+				this.vx *= 1.01;
+				this.vy *= 1.01;
+				
+				this.life++
+					if (this.life >= this.maxLife){
+					delete tentacles[this.id]
+				}
+				
+
+				//tear drop
+				this.radius = -(Math.pow(this.life,2)/(10+locVarX)) + (4*this.life);
+				if (this.radius <= 0){
+					this.radius = 0.1;
+					if (this.life%10 <= squirt){
+					this.radius = 5*squirt;
+					}
+					
+				}
+
+				this.color = 50 * Math.cos(this.life/(6*Math.PI)+spinX/(Math.PI)) + 270;
+
+
+				this.counter++;
+
+
+				c.beginPath();
+				c.arc(canvas.width - Math.abs(this.x - canvas.width),canvas.height - Math.abs(this.y - canvas.height),this.radius,0,Math.PI * 2,false);
+				c.strokeStyle = "hsla(" + this.color + ",100%,50%," +this.alpha+")";
+				c.lineWidth = this.thick;
+				c.stroke();
+
+
+					//Bottom left (when mouse is top right)
+				c.beginPath();
+				c.arc(Math.abs(this.x - canvas.width),Math.abs(this.y - canvas.height),this.radius,0,Math.PI * 2,false);
+				c.strokeStyle = "hsla(" + this.color + ",100%,50%," +this.alpha+")";
+				c.lineWidth = this.thick;
+				c.stroke();
+
+					//Top Left (when mouse is top right)
+				c.beginPath();
+				c.arc(Math.abs(this.x - canvas.width),/*Math.abs(this.y-canvas.height/2)*/ canvas.height - Math.abs(this.y - canvas.height),this.radius,0,Math.PI * 2,false);
+				c.strokeStyle = "hsla(" + this.color + ",100%,50%," +this.alpha+")";
+				c.lineWidth = this.thick;
+				c.stroke();
+
+					//Bottom Right (when mouse is top right)
+				c.beginPath();
+				c.arc(canvas.width - Math.abs(this.x - canvas.width),Math.abs(this.y-canvas.height),this.radius,0,Math.PI * 2,false);
+				c.strokeStyle = "hsla(" + this.color + ",100%,50%," +this.alpha+")";
+				c.lineWidth = this.thick;
+				c.stroke();
+			
+
+
+				//if (this.thick > 0.31)
+				this.thick *= 1;
+				//this.alpha -= .005  ; //* Math.cos(this.id/5) + .03;
+
+
+				
+					
+				
+					
+			
+			}
+
+
+			
+
+
+			
+//new Particle();
+
+			setInterval(function(){
+				c.fillStyle = "rgba(0,0,0,1)";
+				c.fillRect(0,0,canvas.width,canvas.height);
+				frame++;
+				console.log(alphaCtrl);
+				new Tentacle(1,0);
+				new Tentacle(-1,0);
+				new Tentacle(0,1);
+				new Tentacle(0,-1);
+				new Tentacle(1,1);
+				new Tentacle(-1,1);
+				new Tentacle(1,-1);
+				new Tentacle(-1,-1);
+
+				for (var i in tentacles){
+					tentacles[i].draw();
+				}
+
+				//if (frame % 2 == 0)
+					new Particle();
+				//for (var i = 0; i < particleNum; i++){
+				//	new Particle();
+				//}
+				
+				for (var i in particles){
+					particles[i].draw();
+				}
+
+				
+			}, 5);
+			
+		};
+	</script>
+</head>
+<body style = "overflow:hidden; position:absolute; padding: 0; margin: 0; ">
+
+
+
+</body>
+</html>

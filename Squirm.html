@@ -1,0 +1,194 @@
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Motion</title>
+	<script>
+		window.onload = function background() {
+			var canvas = document.createElement("canvas"),
+			c = canvas.getContext("2d")
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
+			document.body.appendChild(canvas);
+			document.body.style.cursor = 'none';
+			particles = {};
+			particleIndex = 0,
+			particleNum = 1;
+			c.fillStyle = "black";
+			c.fillRect(0, 0, canvas.width, canvas.height);
+		
+			var locVarX = 0;
+			var locVarY = 0;
+			var alphaCtrl = 0.1;
+			var frame = 0;
+			var rads = 0;
+			var spinX = 0;
+			var spinY = 0;
+			var pulseVar = 0;
+			var pulseVarCt = 0;
+			document.onkeydown = function (e) {
+				switch (e.keyCode) {
+					case 32:
+						//SPACE
+						locVarX = 0;
+						locVarY = 0;
+						alphaCtrl = .3;
+						break;
+					case 65:
+						//LEFT
+						locVarX -= 2;
+						break;
+					case 87:
+						//UP
+						locVarY += 2;
+						break;
+					case 68:
+						//RIGHT
+						locVarX += 2;
+						break;
+					case 83:
+						//DOWN
+						spinX = 2 * Math.cos(rads / 4);
+						spinY = 2 * Math.sin(rads / 4);
+						rads++;
+						break;
+					case 81:
+						//Q
+						pulseVar = 5 * Math.cos(pulseVarCt / 3);
+						pulseVarCt++;
+						break;
+					case 69:
+						pulseVar = 5 * Math.cos(pulseVarCt);
+						pulseVarCt++;
+						//E
+						break;
+					case 70:
+						pulseVar = 5 * Math.cos(pulseVarCt / 3);
+						pulseVarCt++;
+						spinX = 2 * Math.cos(rads / 4);
+						spinY = 2 * Math.sin(rads / 4);
+						rads++;
+						//E
+						break;
+				}
+			}
+			//initiate mouse and add event listener
+			var mouse = {
+				x: undefined,
+				y: undefined
+
+			}
+
+			window.addEventListener('mousemove',
+				function (event) {
+					mouse.x = event.x;
+					mouse.y = event.y;
+					//console.log(mouse);
+
+				});
+
+			x = new Particle;
+
+			function Particle() {
+				particleIndex++;
+				particles[particleIndex] = this;
+				this.id = particleIndex;
+				//give particle slight movement
+				this.x = mouse.x - 2.5 * Math.cos(this.id / 15) + locVarX;
+				this.y = mouse.y - 2.5 * Math.sin(this.id / 15) + locVarY;
+				//initiate velocity
+				this.vx = 1;
+				this.vy = 1;
+				//initiate radius, growth rate, alpha, and thickness
+				this.radius = 5;
+				this.radiusGrowth = 1;
+				this.alpha = 1;
+				//this.color = "rgba(255,255,255,"+this.alpha+")";
+				this.thick = 2;
+				//life span
+				this.life = 0;
+				this.maxLife = 100;
+				this.color = 255;
+				this.counter = 0;
+				this.counterTruth = 1;
+
+			}
+			Particle.prototype.draw = function () {
+
+				//calculate and update velocity to tend towards center
+				if (this.life == 0) {
+					x = this;
+					;
+					this.magnitude = -1 * Math.sqrt(Math.abs(Math.pow(mouse.x - canvas.width / 2, 2) + Math.pow(mouse.y - canvas.height / 2, 2)));
+					this.vx = (1 * (Math.cos(this.id / 40) + 2)) * (mouse.x - canvas.width / 2) / this.magnitude;
+					this.vy = (1 * Math.sin(this.id / 40) + 2) * (mouse.y - canvas.height / 2) / this.magnitude;
+				} else {
+					this.magnitude = x.magnitude;
+					this.vx = x.vx;
+					this.vy = x.vy;
+				}
+				this.x += this.vx + locVarX + spinX;
+				this.y += this.vy + locVarY + spinY;
+				this.vx *= 1.1;
+				this.vy *= 1.1;
+				this.life++
+				if (this.life >= this.maxLife) {
+					delete particles[this.id]
+				}
+			
+
+				//tear drop
+				this.radius = 50 * Math.sqrt(this.life / (10 - pulseVar))
+				if (this.radius <= 0) {
+					this.radius = 0;
+				}
+
+				c.beginPath();
+				c.arc(canvas.width - Math.abs(this.x - canvas.width), canvas.height - Math.abs(this.y - canvas.height), this.radius, 0, Math.PI * 2, false);
+				c.strokeStyle = "rgba(0,255," + (this.color) + "," + this.alpha + ")";
+				c.lineWidth = this.thick;
+				c.stroke();
+				//Bottom left (when mouse is top right)
+				c.beginPath();
+				c.arc(Math.abs(this.x - canvas.width), Math.abs(this.y - canvas.height), this.radius, 0, Math.PI * 2, false);
+				c.strokeStyle = "rgba(0,255," + (this.color) + "," + this.alpha + ")";
+				c.lineWidth = this.thick;
+				c.stroke();
+
+				//Top Left (when mouse is top right)
+				c.beginPath();
+				c.arc(Math.abs(this.x - canvas.width),/*Math.abs(this.y-canvas.height/2)*/ canvas.height - Math.abs(this.y - canvas.height), this.radius, 0, Math.PI * 2, false);
+				c.strokeStyle = "rgba(0,255," + (this.color) + "," + this.alpha + ")";
+				c.lineWidth = this.thick;
+				c.stroke();
+
+				//Bottom Right (when mouse is top right)
+				c.beginPath();
+				c.arc(canvas.width - Math.abs(this.x - canvas.width), Math.abs(this.y - canvas.height), this.radius, 0, Math.PI * 2, false);
+				c.strokeStyle = "rgba(0,255," + (this.color) + "," + this.alpha + ")";
+				c.lineWidth = this.thick;
+				c.stroke();
+		
+				this.thick *= 0.99;
+				this.alpha *= 0.99;   
+			}
+			setInterval(function () {
+				c.fillStyle = "rgba(0,0,0,1)";
+				c.fillRect(0, 0, canvas.width, canvas.height);
+				frame++;
+				new Particle();
+				for (var i in particles) {
+					particles[i].draw();
+				}
+			}, 5);
+		};
+	</script>
+</head>
+
+<body style="overflow:hidden; position:absolute; padding: 0; margin: 0; ">
+
+
+
+</body>
+
+</html>
