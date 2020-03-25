@@ -107,7 +107,7 @@
 				this.thick = 2;
 				//life span
 				this.life = 0;
-				this.maxLife = 15;
+				this.maxLife = 100;
 				this.color = 255;
 				this.counter = 0;
 				this.counterTruth = 1;
@@ -134,7 +134,6 @@
 				this.life++
 				if (this.life >= this.maxLife) {
 					delete particles[this.id]
-					return 0;
 				}
 			
 
@@ -148,38 +147,27 @@
 				c.arc(canvas.width - Math.abs(this.x - canvas.width), canvas.height - Math.abs(this.y - canvas.height), this.radius, 0, Math.PI * 2, false);
 				c.strokeStyle = "rgba(0,255," + (this.color) + "," + this.alpha + ")";
 				c.lineWidth = this.thick;
-				c.fillStyle = "black";
-				c.fill();
 				c.stroke();
-				
 				//Bottom left (when mouse is top right)
 				c.beginPath();
 				c.arc(Math.abs(this.x - canvas.width), Math.abs(this.y - canvas.height), this.radius, 0, Math.PI * 2, false);
 				c.strokeStyle = "rgba(0,255," + (this.color) + "," + this.alpha + ")";
 				c.lineWidth = this.thick;
-				c.fillStyle = "black";
-				c.fill();
 				c.stroke();
-				
 
 				//Top Left (when mouse is top right)
 				c.beginPath();
 				c.arc(Math.abs(this.x - canvas.width),/*Math.abs(this.y-canvas.height/2)*/ canvas.height - Math.abs(this.y - canvas.height), this.radius, 0, Math.PI * 2, false);
 				c.strokeStyle = "rgba(0,255," + (this.color) + "," + this.alpha + ")";
 				c.lineWidth = this.thick;
-				c.fillStyle = "black";
-				c.fill();
 				c.stroke();
-				
+
 				//Bottom Right (when mouse is top right)
 				c.beginPath();
 				c.arc(canvas.width - Math.abs(this.x - canvas.width), Math.abs(this.y - canvas.height), this.radius, 0, Math.PI * 2, false);
 				c.strokeStyle = "rgba(0,255," + (this.color) + "," + this.alpha + ")";
 				c.lineWidth = this.thick;
-				c.fillStyle = "black";
-				c.fill();
 				c.stroke();
-				
 		
 				this.thick *= 0.95;
 				this.alpha *= 0.95;   
